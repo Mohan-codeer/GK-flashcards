@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ministers Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #0e1118;
+    --card-front: #0e1118;
+    --card-back: #0b1120;
+    --border: rgba(255,255,255,0.07);
+    --accent: #4f8fff;
+    --accent2: #ff6b35;
+    --gold: #f0c040;
+    --text: #e8eaf0;
+    --muted: #5a6070;
+    --glow: rgba(79,143,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,143,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,143,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(79,143,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 80px);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    background: linear-gradient(135deg, #e8eaf0 0%, #4f8fff 50%, #a0c4ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+
+  /* Mode Toggle */
+  .mode-toggle-wrap {
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mode-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 5px;
+    position: relative;
+  }
+
+  .mode-btn {
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.03em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .mode-btn.active {
+    background: linear-gradient(135deg, #ff6b35, #ff4500);
+    color: white;
+    box-shadow: 0 0 20px rgba(255,107,53,0.35);
+  }
+
+  .mode-btn:hover:not(.active) {
+    color: var(--text);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .mode-desc {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Combined mode glow on card */
+  body.combined-mode .card-front::before {
+    background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%);
+  }
+
+  body.combined-mode .progress-fill {
+    background: linear-gradient(90deg, #ff6b35, #ffb347);
+    box-shadow: 0 0 8px #ff6b35;
+  }
+
+  body.combined-mode .shuffle-badge {
+    background: rgba(255,107,53,0.1);
+    border-color: rgba(255,107,53,0.2);
+  }
+
+  body.combined-mode .dot {
+    background: #ff6b35;
+    box-shadow: 0 0 6px #ff6b35;
+  }
+
+  body.combined-mode .shuffle-badge span {
+    color: #ff6b35;
+  }
+
+  /* Card source tag in combined mode */
+  .card-source-tag {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    padding: 3px 10px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    border: 1px solid;
+    opacity: 0.7;
+  }
+
+  .source-india {
+    color: var(--accent);
+    border-color: rgba(79,143,255,0.3);
+    background: rgba(79,143,255,0.08);
+  }
+
+  .source-ap {
+    color: #ff6b35;
+    border-color: rgba(255,107,53,0.3);
+    background: rgba(255,107,53,0.08);
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    letter-spacing: 0.03em;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 0 20px rgba(79,143,255,0.3);
+  }
+
+  .tab:hover:not(.active) {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #a0c4ff);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .progress-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* Card area */
+  .card-area {
+    perspective: 1200px;
+    margin-bottom: 32px;
+    cursor: pointer;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    min-height: 280px;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+    overflow: hidden;
+  }
+
+  .card-front {
+    background: var(--card-front);
+  }
+
+  .card-front::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(79,143,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .card-front::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,107,53,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .card-back {
+    background: var(--card-back);
+    transform: rotateY(180deg);
+  }
+
+  .card-back::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: -80px;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(240,192,64,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    opacity: 0.7;
+  }
+
+  .card-question {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(16px, 3vw, 22px);
+    font-weight: 300;
+    text-align: center;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 600px;
+  }
+
+  .card-question strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .card-answer {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 6vw, 54px);
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: var(--gold);
+    line-height: 1.1;
+    margin-bottom: 16px;
+    text-shadow: 0 0 30px rgba(240,192,64,0.3);
+  }
+
+  .card-portfolio {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .card-hint {
+    position: absolute;
+    bottom: 20px;
+    right: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    opacity: 0.4;
+    letter-spacing: 0.1em;
+  }
+
+  .card-number {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.4;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .btn:hover {
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    transform: translateY(-1px);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(79,143,255,0.25);
+  }
+
+  .btn-primary:hover {
+    background: #6aa0ff;
+    border-color: #6aa0ff;
+    box-shadow: 0 0 28px rgba(79,143,255,0.4);
+  }
+
+  .btn-icon {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 18px;
+  }
+
+  /* Shuffle indicator */
+  .shuffle-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: rgba(79,143,255,0.1);
+    border: 1px solid rgba(79,143,255,0.2);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+  }
+
+  /* Mini cards list */
+  .mini-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin-top: 48px;
+  }
+
+  .mini-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .mini-card:hover {
+    border-color: rgba(79,143,255,0.25);
+    background: rgba(79,143,255,0.04);
+    transform: translateY(-2px);
+  }
+
+  .mini-card-portfolio {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .mini-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gold);
+    text-align: right;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 40px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-area { animation: fadeIn 0.4s ease; }
+
+  .flip-anim {
+    animation: cardPop 0.15s ease;
+  }
+
+  @keyframes cardPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.98); }
+    100% { transform: scale(1); }
+  }
+
+  /* Mode badge */
+  .mode-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    display: inline-block;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-tag">Study Tool — GK 2024</div>
+    <h1>Ministers<br>Flashcards</h1>
+    <p class="subtitle">India &amp; Andhra Pradesh Cabinet — Tap card to reveal</p>
+  </header>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle-wrap">
+    <div class="mode-label">MODE</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeSeparate" onclick="setMode('separate')">Separate</button>
+      <button class="mode-btn" id="modeCombined" onclick="setMode('combined')">Combined — All Ministers</button>
+    </div>
+    <div class="mode-desc" id="modeDesc">Study each government independently</div>
+  </div>
+
+  <!-- Tabs (hidden in combined mode) -->
+  <div class="tabs" id="tabsRow">
+    <button class="tab active" onclick="switchTab('india')">Central Government</button>
+    <button class="tab" onclick="switchTab('ap')">Andhra Pradesh</button>
+  </div>
+
+  <!-- Mode row -->
+  <div class="mode-row">
+    <div class="shuffle-badge"><span class="dot"></span><span id="cardCount">30 Cards</span></div>
+    <button class="btn" onclick="shuffleCards()" style="padding:8px 16px;font-size:12px;">Shuffle</button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-text" id="progressText">1 / 30</div>
+  </div>
+
+  <!-- Flashcard -->
+  <div class="card-area" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front">
+        <div class="card-number" id="cardNum">01</div>
+        <div class="card-source-tag source-india" id="cardSourceFront" style="display:none"></div>
+        <div class="card-label">Ministry</div>
+        <div class="card-question" id="cardQuestion">Loading...</div>
+        <div class="card-hint">TAP TO REVEAL</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-number" id="cardNumBack">01</div>
+        <div class="card-source-tag source-india" id="cardSourceBack" style="display:none"></div>
+        <div class="card-label">Answer</div>
+        <div class="card-answer" id="cardAnswer">—</div>
+        <div class="card-portfolio" id="cardPortfolio"></div>
+        <div class="card-hint">TAP TO FLIP BACK</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-icon" onclick="prevCard()">←</button>
+    <button class="btn btn-primary" onclick="nextCard()">Next Card →</button>
+    <button class="btn btn-icon" onclick="resetCards()">↺</button>
+  </div>
+
+  <!-- Full list -->
+  <div id="fullList"></div>
+
+</div>
+
+<script>
+const indiaData = [
+  { ministry: "Prime Minister", name: "Narendra Modi", extra: "Also holds: Atomic Energy, Space, Personnel & Public Grievances" },
+  { ministry: "Defence", name: "Rajnath Singh", extra: "" },
+  { ministry: "Home Affairs & Cooperation", name: "Amit Shah", extra: "" },
+  { ministry: "Road Transport & Highways", name: "Nitin Jairam Gadkari", extra: "" },
+  { ministry: "Finance & Corporate Affairs", name: "Nirmala Sitharaman", extra: "" },
+  { ministry: "Agriculture & Rural Development", name: "Shivraj Singh Chouhan", extra: "Agriculture, Farmers' Welfare & Rural Development" },
+  { ministry: "External Affairs", name: "S. Jaishankar", extra: "" },
+  { ministry: "Health & Chemicals", name: "Jagat Prakash Nadda", extra: "Health, Family Welfare & Chemicals, Fertilizers" },
+  { ministry: "Housing & Power", name: "Manohar Lal", extra: "Housing, Urban Affairs & Power" },
+  { ministry: "Heavy Industries & Steel", name: "H. D. Kumaraswamy", extra: "" },
+  { ministry: "Commerce & Industry", name: "Piyush Goyal", extra: "" },
+  { ministry: "Education", name: "Dharmendra Pradhan", extra: "" },
+  { ministry: "MSME", name: "Jitan Ram Manjhi", extra: "Micro, Small and Medium Enterprises" },
+  { ministry: "Panchayati Raj & Fisheries", name: "Rajiv Ranjan Singh (Lalan Singh)", extra: "Also: Animal Husbandry and Dairying" },
+  { ministry: "Ports, Shipping & Waterways", name: "Sarbananda Sonowal", extra: "" },
+  { ministry: "Social Justice & Empowerment", name: "Virendra Kumar", extra: "" },
+  { ministry: "Civil Aviation", name: "Kinjarapu Ram Mohan Naidu", extra: "" },
+  { ministry: "Consumer Affairs & Renewable Energy", name: "Pralhad Joshi", extra: "Consumer Affairs, Food, Public Distribution & New/Renewable Energy" },
+  { ministry: "Tribal Affairs", name: "Jual Oram", extra: "" },
+  { ministry: "Textiles", name: "Giriraj Singh", extra: "" },
+  { ministry: "Railways, IT & Broadcasting", name: "Ashwini Vaishnaw", extra: "Railways, Information & Broadcasting, Electronics & IT" },
+  { ministry: "Communications & North East", name: "Jyotiraditya M. Scindia", extra: "Communications & Development of North Eastern Region" },
+  { ministry: "Environment, Forest & Climate", name: "Bhupender Yadav", extra: "" },
+  { ministry: "Culture & Tourism", name: "Gajendra Singh Shekhawat", extra: "" },
+  { ministry: "Women & Child Development", name: "Annpurna Devi", extra: "" },
+  { ministry: "Parliamentary Affairs & Minority Affairs", name: "Kiren Rijiju", extra: "" },
+  { ministry: "Petroleum & Natural Gas", name: "Hardeep Singh Puri", extra: "" },
+  { ministry: "Labour & Youth Affairs", name: "Mansukh Mandaviya", extra: "Labour, Employment, Youth Affairs & Sports" },
+  { ministry: "Coal & Mines", name: "G. Kishan Reddy", extra: "" },
+  { ministry: "Food Processing Industries", name: "Chirag Paswan", extra: "" },
+  { ministry: "Jal Shakti", name: "C. R. Patil", extra: "" },
+];
+
+const apData = [
+  { ministry: "Chief Minister", name: "N. Chandrababu Naidu", extra: "GAD, Law & Order, Public Enterprises" },
+  { ministry: "Deputy Chief Minister", name: "Pawan Kalyan", extra: "Panchayati Raj, Rural Development, Environment, Forest & Science" },
+  { ministry: "HRD, IT & Electronics", name: "Nara Lokesh", extra: "Human Resources Development, IT, Electronics & Communications" },
+  { ministry: "Home Affairs", name: "Vangalapudi Anitha", extra: "Home Affairs & Disaster Management" },
+  { ministry: "Finance", name: "Payyavula Keshav", extra: "" },
+  { ministry: "Agriculture & Animal Husbandry", name: "Kinjarapu Atchannaidu", extra: "Agriculture, Co-operation, Marketing, Animal Husbandry, Dairy & Fisheries" },
+  { ministry: "Revenue & Registration", name: "Anagani Satya Prasad", extra: "Revenue, Registration & Stamps" },
+  { ministry: "Health & Family Welfare", name: "Satya Kumar Yadav", extra: "" },
+  { ministry: "Water Resources", name: "Dr. Nimmala Ramanaidu", extra: "" },
+  { ministry: "Social Welfare", name: "Dr. Dola Bala Veeranjaneya Swamy", extra: "Social Welfare, Disabled & Senior Citizen Welfare" },
+  { ministry: "Industries & Commerce", name: "T. G. Bharath", extra: "Industries, Commerce & Food Processing" },
+  { ministry: "BC Welfare & Textiles", name: "S. Savitha", extra: "BC Welfare, EWS Welfare, Handlooms & Textiles" },
+  { ministry: "Mines & Excise", name: "Kollu Ravindra", extra: "Mines, Geology & Excise" },
+  { ministry: "Municipal Administration", name: "P. Narayana", extra: "Municipal Administration & Urban Development" },
+  { ministry: "Energy", name: "Gottipati Ravi Kumar", extra: "" },
+  { ministry: "Roads & Buildings", name: "B. C. Janardhan Reddy", extra: "" },
+  { ministry: "Tourism & Culture", name: "Kandula Durgesh", extra: "Tourism, Culture & Youth Advancement" },
+  { ministry: "Transport & Ports", name: "Mandipalli Ramprasad Reddy", extra: "Transport, Roads & Ports" },
+  { ministry: "Housing", name: "Kolusu Parthasarathy", extra: "" },
+  { ministry: "Minority Welfare & Wakf", name: "Mohammed Imtiaz", extra: "" },
+  { ministry: "Tribal Welfare", name: "Gummadi Sandhya Rani", extra: "" },
+  { ministry: "MSME & NRI Affairs", name: "Kondapalli Srinivas", extra: "MSME, NRI Empowerment & Relations" },
+  { ministry: "Food & Civil Supplies", name: "Nadendla Manohar", extra: "Food, Civil Supplies & Consumer Affairs" },
+];
+
+let currentTab = 'india';
+let currentData = [...indiaData];
+let currentIndex = 0;
+let isFlipped = false;
+let currentMode = 'separate';
+
+function setMode(mode) {
+  currentMode = mode;
+  currentIndex = 0;
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+
+  const tabsRow = document.getElementById('tabsRow');
+  const modeDesc = document.getElementById('modeDesc');
+
+  document.getElementById('modeSeparate').classList.toggle('active', mode === 'separate');
+  document.getElementById('modeCombined').classList.toggle('active', mode === 'combined');
+
+  if (mode === 'combined') {
+    // Tag each card with its source
+    const indiaTagged = indiaData.map(c => ({ ...c, source: 'india' }));
+    const apTagged = apData.map(c => ({ ...c, source: 'ap' }));
+    currentData = [...indiaTagged, ...apTagged];
+    tabsRow.style.display = 'none';
+    document.body.classList.add('combined-mode');
+    modeDesc.textContent = `${currentData.length} ministers — Central + Andhra Pradesh combined`;
+  } else {
+    tabsRow.style.display = 'flex';
+    document.body.classList.remove('combined-mode');
+    currentData = currentTab === 'india' ? [...indiaData] : [...apData];
+    modeDesc.textContent = 'Study each government independently';
+  }
+
+  updateCard();
+  renderList();
+}
+
+function switchTab(tab) {
+  if (currentMode === 'combined') return;
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'india') || (i === 1 && tab === 'ap'));
+  });
+  currentData = tab === 'india' ? [...indiaData] : [...apData];
+  currentIndex = 0;
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  updateCard();
+  renderList();
+}
+
+function updateCard() {
+  const card = currentData[currentIndex];
+  const total = currentData.length;
+  const num = String(currentIndex + 1).padStart(2, '0');
+
+  // Source tag logic
+  const frontTag = document.getElementById('cardSourceFront');
+  const backTag = document.getElementById('cardSourceBack');
+  if (currentMode === 'combined' && card.source) {
+    const label = card.source === 'india' ? 'Central Govt' : 'Andhra Pradesh';
+    const cls = card.source === 'india' ? 'source-india' : 'source-ap';
+    [frontTag, backTag].forEach(t => {
+      t.textContent = label;
+      t.className = `card-source-tag ${cls}`;
+      t.style.display = 'block';
+    });
+  } else {
+    frontTag.style.display = 'none';
+    backTag.style.display = 'none';
+  }
+
+  const govLabel = currentMode === 'combined'
+    ? (card.source === 'india' ? 'India' : 'Andhra Pradesh')
+    : (currentTab === 'india' ? 'India' : 'Andhra Pradesh');
+
+  document.getElementById('cardQuestion').innerHTML = `Who is the <strong>${card.ministry} Minister</strong> of ${govLabel}?`;
+  document.getElementById('cardAnswer').textContent = card.name;
+  document.getElementById('cardPortfolio').textContent = card.extra || card.ministry;
+  document.getElementById('cardNum').textContent = num;
+  document.getElementById('cardNumBack').textContent = num;
+  document.getElementById('progressText').textContent = `${currentIndex + 1} / ${total}`;
+  document.getElementById('progressFill').style.width = `${((currentIndex + 1) / total) * 100}%`;
+  document.getElementById('cardCount').textContent = `${total} Cards`;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('cardInner').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  if (currentIndex < currentData.length - 1) {
+    currentIndex++;
+    isFlipped = false;
+    document.getElementById('cardInner').classList.remove('flipped');
+    updateCard();
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    isFlipped = false;
+    document.getElementById('cardInner').classList.remove('flipped');
+    updateCard();
+  }
+}
+
+function resetCards() {
+  currentIndex = 0;
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  updateCard();
+}
+
+function shuffleCards() {
+  for (let i = currentData.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [currentData[i], currentData[j]] = [currentData[j], currentData[i]];
+  }
+  currentIndex = 0;
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  updateCard();
+}
+
+function renderList() {
+  const container = document.getElementById('fullList');
+  if (currentMode === 'combined') {
+    container.innerHTML = '';
+  } else {
+    const label = currentTab === 'india' ? 'Central Government' : 'Andhra Pradesh';
+    container.innerHTML = `<div class="section-title">Full Reference — ${label}</div><div class="mini-list">${
+      currentData.map((c, i) => `
+        <div class="mini-card" onclick="jumpTo(${i})">
+          <div class="mini-card-portfolio">${c.ministry}</div>
+          <div class="mini-card-name">${c.name.split(' ').slice(-1)[0]}</div>
+        </div>
+      `).join('')
+    }</div>`;
+  }
+}
+
+function jumpTo(i) {
+  currentIndex = i;
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  updateCard();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft') prevCard();
+  if (e.key === ' ') { e.preventDefault(); flipCard(); }
+});
+
+// Init
+updateCard();
+renderList();
+</script>
+</body>
+</html>
