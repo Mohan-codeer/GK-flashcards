@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ministers Flashcards</title>
+<title>GK Flashcards — Ministers & Current Affairs</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -586,17 +586,79 @@
     display: inline-block;
     margin-right: 6px;
   }
+  /* Section Switcher */
+  .section-switcher {
+    display: flex;
+    gap: 0;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 5px;
+    margin-bottom: 36px;
+  }
+
+  .sec-btn {
+    flex: 1;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .sec-btn.active {
+    background: linear-gradient(135deg, #1a2a4a, #1e3560);
+    color: white;
+    box-shadow: 0 0 24px rgba(79,143,255,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+    border: 1px solid rgba(79,143,255,0.25);
+  }
+
+  .sec-btn:hover:not(.active) {
+    color: var(--text);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* CA card label is green */
+  body.ca-mode .card-label { color: #4caf92; }
+  body.ca-mode .progress-fill {
+    background: linear-gradient(90deg, #4caf92, #80d8b8);
+    box-shadow: 0 0 8px #4caf92;
+  }
+  body.ca-mode .shuffle-badge {
+    background: rgba(76,175,146,0.1);
+    border-color: rgba(76,175,146,0.25);
+  }
+  body.ca-mode .dot { background: #4caf92; box-shadow: 0 0 6px #4caf92; }
+  body.ca-mode .shuffle-badge span { color: #4caf92; }
+  body.ca-mode .card-answer { color: #80d8b8; text-shadow: 0 0 30px rgba(76,175,146,0.3); }
+  body.ca-mode .card-front::before {
+    background: radial-gradient(circle, rgba(76,175,146,0.07) 0%, transparent 70%);
+  }
 </style>
 </head>
 <body>
 <div class="container">
 
   <header>
-    <div class="header-tag">Study Tool — GK 2024</div>
-    <h1>Ministers<br>Flashcards</h1>
-    <p class="subtitle">India &amp; Andhra Pradesh Cabinet — Tap card to reveal</p>
+    <div class="header-tag">Study Tool — GK 2025-2026</div>
+    <h1>GK<br>Flashcards</h1>
+    <p class="subtitle">Ministers &amp; Current Affairs — Tap card to reveal</p>
   </header>
 
+  <!-- Section Switcher -->
+  <div class="section-switcher">
+    <button class="sec-btn active" id="secMinisters" onclick="switchSection('ministers')">Ministers</button>
+    <button class="sec-btn" id="secCA" onclick="switchSection('ca')">Current Affairs 2025-26</button>
+  </div>
+
+  <!-- Ministers Panel -->
+  <div id="ministerPanel">
   <!-- Mode Toggle -->
   <div class="mode-toggle-wrap">
     <div class="mode-label">MODE</div>
@@ -612,6 +674,8 @@
     <button class="tab active" onclick="switchTab('india')">Central Government</button>
     <button class="tab" onclick="switchTab('ap')">Andhra Pradesh</button>
   </div>
+  </div>
+  <!-- /Ministers Panel -->
 
   <!-- Mode row -->
   <div class="mode-row">
@@ -633,7 +697,7 @@
       <div class="card-face card-front">
         <div class="card-number" id="cardNum">01</div>
         <div class="card-source-tag source-india" id="cardSourceFront" style="display:none"></div>
-        <div class="card-label">Ministry</div>
+        <div class="card-label" id="cardLabelFront">Ministry</div>
         <div class="card-question" id="cardQuestion">Loading...</div>
         <div class="card-hint">TAP TO REVEAL</div>
       </div>
@@ -721,11 +785,74 @@ const apData = [
   { ministry: "Food & Civil Supplies", name: "Nadendla Manohar", extra: "Food, Civil Supplies & Consumer Affairs" },
 ];
 
+const caData = [
+  { q: "Who was sworn in as Prime Minister of Bangladesh in February 2026?", a: "Tarique Rehman", extra: "" },
+  { q: "Which Indian athlete won the Thailand Masters 2026 title?", a: "Bevika Sihag", extra: "" },
+  { q: "Which space agency launched the 'Gravity Map' mission in January 2026?", a: "NASA", extra: "" },
+  { q: "Which Indian state hosted the 'Global Investors Summit' in February 2026?", a: "Uttar Pradesh", extra: "" },
+  { q: "Name the campaign launched by the Ministry of Culture in January 2026 to promote local artisans.", a: "Vocal for Local", extra: "" },
+  { q: "Which Indian city was ranked the 'Most Startup-Friendly' in the 2026 report?", a: "Bengaluru", extra: "" },
+  { q: "Which Indian state launched the Green Hydrogen Mission in December 2025 to achieve net-zero emissions?", a: "Maharashtra", extra: "" },
+  { q: "Name the newly inaugurated International Airport in Uttar Pradesh.", a: "Noida International Airport", extra: "" },
+  { q: "Which North-Eastern state celebrated its 54th Statehood Day in January 2026?", a: "Manipur", extra: "" },
+  { q: "Who is the current Governor of the Reserve Bank of India (RBI)?", a: "Sanjay Malhotra", extra: "" },
+  { q: "Which city hosted the India-AI Impact Summit at Bharat Mandapam in February 2026?", a: "New Delhi", extra: "" },
+  { q: "Which international organization released the 'Oceans in Danger' report in December 2025?", a: "UNESCO", extra: "" },
+  { q: "The Mumbai-Ahmedabad Bullet Train project completed its first underwater tunnel segment in which month of 2026?", a: "January 2026", extra: "" },
+  { q: "What was the 2026 theme for World Cancer Day (February 4)?", a: "United by Unique", extra: "" },
+  { q: "Which bank became the first to integrate Clari5's anti-fraud solution in February 2026?", a: "PNB", extra: "Punjab National Bank" },
+  { q: "Which country hosted the Global Green Energy Summit in February 2026?", a: "UAE", extra: "United Arab Emirates" },
+  { q: "What is the current approximate value of 1 USD in Indian Rupees?", a: "Rs. 83.50 – 84.50", extra: "" },
+  { q: "Which force celebrated its 50th Raising Day on February 1, 2026?", a: "Indian Coast Guard", extra: "" },
+  { q: "Which country became the largest exporter of crude oil to India in January 2026?", a: "Russia", extra: "" },
+  { q: "Who was the chief guest at India's 77th Republic Day celebrations in January 2026?", a: "Ursula von der Leyen & António Costa", extra: "European Union leaders" },
+  { q: "Name the first 'Green Hydrogen' powered train launched in India in February 2026.", a: "Hydrogen Heritage Train", extra: "" },
+  { q: "Name the AI tool launched by Google in late 2025 to help students with mathematics.", a: "Google Gemini", extra: "Google Math AI Tool" },
+  { q: "Which country hosted the 2026 FIFA World Cup qualifiers involving India in December 2025?", a: "Qatar", extra: "" },
+  { q: "PM Modi launched the PM-RAHAT scheme for whom in February 2026?", a: "Disaster-affected citizens", extra: "" },
+  { q: "Who was appointed as the new Chairperson of ISRO in December 2025?", a: "V. Narayanan", extra: "" },
+  { q: "Name the app launched by the Ministry of Education in February 2026 to facilitate virtual labs for rural schools.", a: "Vidya Shakti App", extra: "" },
+  { q: "Name the joint military exercise between India and Japan held in Rajasthan in January 2026.", a: "Dharma Guardian 2026", extra: "" },
+  { q: "Name the new digital currency launched by RBI for retail use.", a: "Digital Rupee (e-R)", extra: "" },
+  { q: "The Supreme Court banned a specific NCERT Social Science textbook for Class 8 due to a controversial section on what topic?", a: "Corruption in the Judiciary", extra: "" },
+  { q: "Where is the 39th Suraj Kund International Atmanirbhar Crafts Mela being held?", a: "Faridabad, Haryana", extra: "" },
+  { q: "Who became the first Indian woman since 2009, after Sania Mirza, to reach a major ITF Women's Singles final?", a: "Vaishnavi Adkar", extra: "" },
+  { q: "What rare astronomical event was expected on 28 February 2026?", a: "Six Planet Alignment", extra: "" },
+  { q: "Which state government launched the Yuva Sathi scheme in 2026 to provide financial assistance to unemployed youth?", a: "West Bengal", extra: "" },
+  { q: "Which major vaccination campaign did PM Modi launch on 28 February 2026?", a: "HPV Vaccination Campaign", extra: "" },
+];
+
+let currentSection = 'ministers';
 let currentTab = 'india';
 let currentData = [...indiaData];
 let currentIndex = 0;
 let isFlipped = false;
 let currentMode = 'separate';
+
+function switchSection(sec) {
+  currentSection = sec;
+  currentIndex = 0;
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  document.getElementById('secMinisters').classList.toggle('active', sec === 'ministers');
+  document.getElementById('secCA').classList.toggle('active', sec === 'ca');
+  document.getElementById('ministerPanel').style.display = sec === 'ministers' ? 'block' : 'none';
+
+  if (sec === 'ca') {
+    currentData = [...caData];
+    document.body.classList.add('ca-mode');
+    document.body.classList.remove('combined-mode');
+    document.getElementById('cardLabelFront').textContent = 'Question';
+  } else {
+    document.body.classList.remove('ca-mode');
+    document.getElementById('cardLabelFront').textContent = 'Ministry';
+    currentData = currentMode === 'combined'
+      ? [...indiaData.map(c=>({...c,source:'india'})), ...apData.map(c=>({...c,source:'ap'}))]
+      : (currentTab === 'india' ? [...indiaData] : [...apData]);
+  }
+  updateCard();
+  renderList();
+}
 
 function setMode(mode) {
   currentMode = mode;
@@ -780,7 +907,7 @@ function updateCard() {
   // Source tag logic
   const frontTag = document.getElementById('cardSourceFront');
   const backTag = document.getElementById('cardSourceBack');
-  if (currentMode === 'combined' && card.source) {
+  if (currentSection === 'ministers' && currentMode === 'combined' && card.source) {
     const label = card.source === 'india' ? 'Central Govt' : 'Andhra Pradesh';
     const cls = card.source === 'india' ? 'source-india' : 'source-ap';
     [frontTag, backTag].forEach(t => {
@@ -793,13 +920,19 @@ function updateCard() {
     backTag.style.display = 'none';
   }
 
-  const govLabel = currentMode === 'combined'
-    ? (card.source === 'india' ? 'India' : 'Andhra Pradesh')
-    : (currentTab === 'india' ? 'India' : 'Andhra Pradesh');
+  if (currentSection === 'ca') {
+    document.getElementById('cardQuestion').innerHTML = card.q;
+    document.getElementById('cardAnswer').textContent = card.a;
+    document.getElementById('cardPortfolio').textContent = card.extra || '';
+  } else {
+    const govLabel = currentMode === 'combined'
+      ? (card.source === 'india' ? 'India' : 'Andhra Pradesh')
+      : (currentTab === 'india' ? 'India' : 'Andhra Pradesh');
+    document.getElementById('cardQuestion').innerHTML = `Who is the <strong>${card.ministry} Minister</strong> of ${govLabel}?`;
+    document.getElementById('cardAnswer').textContent = card.name;
+    document.getElementById('cardPortfolio').textContent = card.extra || card.ministry;
+  }
 
-  document.getElementById('cardQuestion').innerHTML = `Who is the <strong>${card.ministry} Minister</strong> of ${govLabel}?`;
-  document.getElementById('cardAnswer').textContent = card.name;
-  document.getElementById('cardPortfolio').textContent = card.extra || card.ministry;
   document.getElementById('cardNum').textContent = num;
   document.getElementById('cardNumBack').textContent = num;
   document.getElementById('progressText').textContent = `${currentIndex + 1} / ${total}`;
@@ -850,7 +983,16 @@ function shuffleCards() {
 
 function renderList() {
   const container = document.getElementById('fullList');
-  if (currentMode === 'combined') {
+  if (currentSection === 'ca') {
+    container.innerHTML = `<div class="section-title">All 34 Current Affairs Questions</div><div class="mini-list">${
+      currentData.map((c, i) => `
+        <div class="mini-card" onclick="jumpTo(${i})" style="border-color:rgba(76,175,146,0.1);">
+          <div class="mini-card-portfolio" style="font-size:11px;">${c.q.length > 60 ? c.q.substring(0,60)+'…' : c.q}</div>
+          <div class="mini-card-name" style="color:#4caf92;font-size:11px;max-width:120px;text-align:right;white-space:normal;">${c.a}</div>
+        </div>
+      `).join('')
+    }</div>`;
+  } else if (currentMode === 'combined') {
     container.innerHTML = '';
   } else {
     const label = currentTab === 'india' ? 'Central Government' : 'Andhra Pradesh';
