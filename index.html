@@ -286,12 +286,13 @@
     perspective: 1200px;
     margin-bottom: 32px;
     cursor: pointer;
+    height: 300px;
   }
 
   .card-inner {
     position: relative;
     width: 100%;
-    min-height: 280px;
+    height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -311,7 +312,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 40px;
+    padding: 40px 40px;
     overflow: hidden;
   }
 
@@ -716,7 +717,6 @@
   <div class="controls">
     <button class="btn btn-icon" onclick="prevCard()">←</button>
     <button class="btn btn-primary" onclick="nextCard()">Next Card →</button>
-    <button class="btn btn-icon" onclick="resetCards()">↺</button>
   </div>
 
   <!-- Full list -->
